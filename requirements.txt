@@ -1,0 +1,6 @@
+fastapi
+pydantic==1.9.2
+python-dotenv==0.21.0
+SQLAlchemy==1.4.42
+starlette==0.19.1
+alembic
