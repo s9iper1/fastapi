@@ -1,16 +1,12 @@
 import os
-from http import HTTPStatus
 from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
-from fastapi.openapi.models import Response
-from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-from fastapi.encoders import jsonable_encoder
 
 from config.db import SessionLocal
-from models.user import Users
-from schemas.index import User
+from models.index import Users, Notes
+from schemas.index import User, Note
 
 user = APIRouter()
 
@@ -26,7 +22,6 @@ def get_db():
 
 @user.get("/get_all_users/")
 async def get_all_user(db: Session = Depends(get_db)):
-    # return db.execute(Users.select()).fetchall()
     print(db.query(Users).all())
     return db.query(Users).all()
 
@@ -118,3 +113,22 @@ async def get_profile_picture(id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     profile_pic = db_user.profile_image
     return profile_pic
+
+
+@user.post("/create_note/{id}")
+async def create_note(id: int, note: Note, db: Session = Depends(get_db)):
+    new_note = Notes(title=note.title, user_id=id, description=note.description, read=note.read)
+    db.add(new_note)
+    db.commit()
+    db.refresh(new_note)
+    return new_note
+
+
+@user.get("/mynotes/{id}")
+async def get_notes(id: int, db: Session = Depends(get_db)):
+    return db.query(Notes).filter(Notes.user_id == id).all()
+
+
+@user.get("/get_all_notes/")
+async def get_all_notes(db: Session = Depends(get_db)):
+    return db.query(Notes).all()

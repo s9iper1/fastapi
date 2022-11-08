@@ -1,4 +1,7 @@
 from pydantic import BaseModel, validator, validate_email
+from typing import Optional
+
+from models.index import Notes
 
 
 class User(BaseModel):
@@ -6,6 +9,7 @@ class User(BaseModel):
     email: str | None
     password: str | None
     profile_image: str | None
+    notes: Optional[list[Notes]] = []
 
     @validator("email")
     def validate_email(cls, values):
@@ -21,3 +25,8 @@ class User(BaseModel):
         if len(values) <= 4:
             raise ValueError("Password must be of 5 character")
         return values
+
+    class Config:
+        orm_mode = True
+        arbitrary_types_allowed = True
+        schema_extra = {}
